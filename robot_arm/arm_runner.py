@@ -10,6 +10,7 @@ from robot_arm.robot_vision import get_base_positions
 from robot_arm.scservo_controller import SCServoArm, SCServoConfig
 
 DEFAULT_MOTOR_PORT = "/dev/serial/by-id/usb-1a86_USB_Single_Serial_5A68008715-if00"
+DEFAULT_MOTOR_IDS = "1,2,3,4,5"
 
 _arm: SCServoArm | None = None
 _gestures: Gestures | None = None
@@ -26,9 +27,7 @@ def _get_arm() -> SCServoArm | None:
         return _arm
 
     motor_port = os.getenv("MOTOR_PORT", DEFAULT_MOTOR_PORT)
-    motor_ids_raw = os.getenv("MOTOR_IDS")
-    if not motor_ids_raw:
-        return None
+    motor_ids_raw = os.getenv("MOTOR_IDS", DEFAULT_MOTOR_IDS)
 
     config = SCServoConfig(
         port=motor_port,
