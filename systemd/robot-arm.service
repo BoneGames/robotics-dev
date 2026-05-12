@@ -1,0 +1,16 @@
+[Unit]
+Description=Robot arm controller
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=__REPO_ROOT__
+ExecStart=__VENV_PYTHON__ -m robot_arm.main
+Restart=on-failure
+RestartSec=2
+Environment=PYTHONUNBUFFERED=1
+Environment=MOTOR_PORT=/dev/serial/by-id/usb-1a86_USB_Single_Serial_5A68008715-if00
+
+[Install]
+WantedBy=multi-user.target
