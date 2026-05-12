@@ -21,11 +21,11 @@ class Gestures:
         """Perform a short emphasis gesture from the current arm pose."""
 
         base_positions = self.arm.read_positions()
-        if len(base_positions) < 4:
+        if len(base_positions) < 3:
             return
 
         gesture_positions = list(base_positions)
-        gesture_positions[3] = _clamp_position(gesture_positions[3] + 80)
+        gesture_positions[2] = _clamp_position(gesture_positions[2] + 80)
 
         for pulse_index in range(3):
             self.arm.write_goal_positions(gesture_positions)

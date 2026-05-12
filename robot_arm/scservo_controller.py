@@ -11,6 +11,8 @@ PROTOCOL_VERSION = 0
 
 ADDR_TORQUE_ENABLE = 40
 ADDR_GOAL_POSITION = 42
+ADDR_GOAL_TIME = 44
+ADDR_GOAL_SPEED = 46
 ADDR_PRESENT_POSITION = 56
 
 LEN_TORQUE_ENABLE = 1
@@ -28,6 +30,8 @@ class SCServoConfig:
     motor_ids: list[int]
     baudrate: int = 1_000_000
     retries: int = 5
+    move_time: int | None = None
+    move_speed: int | None = None
 
 
 class SCServoArm:
@@ -103,6 +107,26 @@ class SCServoArm:
         return values
 
     def write_goal_positions(self, positions: Iterable[int]) -> None:
+        if self.config.move_time is not None:
+            self._sync_write(
+                addr=ADDR_GOAL_TIME,
+                byte_len=2,
+                payloads={
+                    motor_id: _pack_u16(self.config.move_time)
+                    for motor_id in self.config.motor_ids
+                },
+            )
+
+        if self.config.move_speed is not None:
+            self._sync_write(
+                addr=ADDR_GOAL_SPEED,
+                byte_len=2,
+                payloads={
+                    motor_id: _pack_u16(self.config.move_speed)
+                    for motor_id in self.config.motor_ids
+                },
+            )
+
         payloads = {
             motor_id: _pack_u16(int(position))
             for motor_id, position in zip(

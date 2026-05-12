@@ -20,6 +20,13 @@ def _parse_motor_ids(raw_ids: str) -> list[int]:
     return [int(item.strip()) for item in raw_ids.split(",") if item.strip()]
 
 
+def _parse_optional_int(name: str) -> int | None:
+    raw = os.getenv(name)
+    if raw is None or not raw.strip():
+        return None
+    return int(raw)
+
+
 def _get_arm() -> SCServoArm | None:
     global _arm
 
@@ -33,6 +40,8 @@ def _get_arm() -> SCServoArm | None:
         port=motor_port,
         motor_ids=_parse_motor_ids(motor_ids_raw),
         baudrate=int(os.getenv("MOTOR_BAUDRATE", "1000000")),
+        move_time=_parse_optional_int("MOTOR_MOVE_TIME"),
+        move_speed=_parse_optional_int("MOTOR_MOVE_SPEED"),
     )
 
     _arm = SCServoArm(config)
