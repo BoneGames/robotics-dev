@@ -50,6 +50,30 @@ def _get_gestures(arm: SCServoArm) -> Gestures:
     return _gestures
 
 
+def _wait_for_targets(
+    arm: SCServoArm,
+    targets: list[int],
+    timeout_seconds: float = 4.0,
+    tolerance_ticks: int = 30,
+    poll_interval_seconds: float = 0.05,
+) -> bool:
+    """Wait until motors are near target positions or timeout occurs."""
+
+    deadline = time.monotonic() + timeout_seconds
+
+    while time.monotonic() < deadline:
+        current = arm.read_positions()
+        if len(current) != len(targets):
+            return False
+
+        if all(abs(actual - target) <= tolerance_ticks for actual, target in zip(current, targets)):
+            return True
+
+        time.sleep(poll_interval_seconds)
+
+    return False
+
+
 def indicate_position(positions: list[int]) -> None:
     """Move arm to the provided positions and perform the gesture."""
 
@@ -61,6 +85,11 @@ def indicate_position(positions: list[int]) -> None:
     targets = positions
     arm.write_goal_positions(targets)
     print(f"Sent move to targets: {targets}")
+
+    arrived = _wait_for_targets(arm, targets)
+    if not arrived:
+        print("Target move timed out; continuing with gesture")
+
     _get_gestures(arm).emphasize_point()
     print("Completed emphasis gesture")
 
