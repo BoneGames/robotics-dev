@@ -13,7 +13,7 @@ Environment=PYTHONUNBUFFERED=1
 Environment=GPIOZERO_PIN_FACTORY=lgpio
 Environment=MOTOR_PORT=/dev/serial/by-id/usb-1a86_USB_Single_Serial_5A68008715-if00
 Environment=MOTOR_IDS=1,2,3,4,5
-Environment=MOTOR_MOVE_SPEED=50
+Environment=MOTOR_MOVE_SPEED=200
 
 [Install]
 WantedBy=multi-user.target
