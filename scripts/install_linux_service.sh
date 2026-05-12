@@ -29,11 +29,36 @@ if [[ ! -f "${SERVICE_TEMPLATE}" ]]; then
   exit 1
 fi
 
-"${PYTHON_BIN}" -m venv "${VENV_DIR}"
-"${VENV_DIR}/bin/python" -m pip install --upgrade pip
+# Spinner helper — runs a command in the background and shows an animated spinner
+run_with_spinner() {
+  local label="$1"
+  shift
+  "$@" &>/tmp/robot-arm-install.log &
+  local pid=$!
+  local spin='|/-\'
+  local i=0
+  printf "%s  " "${label}"
+  while kill -0 "${pid}" 2>/dev/null; do
+    printf "\b${spin:i++%${#spin}:1}"
+    sleep 0.1
+  done
+  wait "${pid}"
+  local exit_code=$?
+  if [[ ${exit_code} -eq 0 ]]; then
+    printf "\b done\n"
+  else
+    printf "\b FAILED\n"
+    cat /tmp/robot-arm-install.log
+    exit ${exit_code}
+  fi
+}
+
+run_with_spinner "Creating virtual environment..." "${PYTHON_BIN}" -m venv "${VENV_DIR}"
+run_with_spinner "Upgrading pip.................." "${VENV_DIR}/bin/python" -m pip install --upgrade pip
 
 if [[ -s "${REPO_ROOT}/requirements.txt" ]]; then
-  "${VENV_DIR}/bin/python" -m pip install -r "${REPO_ROOT}/requirements.txt"
+  run_with_spinner "Installing packages (this may take several minutes on Pi Zero)..." \
+    "${VENV_DIR}/bin/python" -m pip install -r "${REPO_ROOT}/requirements.txt"
 fi
 
 if [[ "${EUID}" -eq 0 ]]; then
