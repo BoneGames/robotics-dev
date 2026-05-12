@@ -10,6 +10,8 @@ from robot_arm.draw_parser import get_round
 from robot_arm.robot_vision import get_positions
 from robot_arm.user_input import button_pressed
 
+BUTTON_POLL_INTERVAL_SECONDS = 0.05
+
 
 def main() -> int:
     
@@ -34,7 +36,7 @@ def main() -> int:
             indicate_position(positions)
             move_to_base_position(delay_seconds=1)
         previous_pressed = pressed
-        time.sleep(1)
+        time.sleep(BUTTON_POLL_INTERVAL_SECONDS)
 
     shutdown_arm()
 
