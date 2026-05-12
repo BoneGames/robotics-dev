@@ -19,10 +19,7 @@ LEN_PRESENT_POSITION = 2
 
 
 def _pack_u16(value: int) -> list[int]:
-    return [
-        scs.SCS_LOBYTE(scs.SCS_LOWORD(value)),
-        scs.SCS_HIBYTE(scs.SCS_LOWORD(value)),
-    ]
+    return [value & 0xFF, (value >> 8) & 0xFF]
 
 
 @dataclass
@@ -37,7 +34,13 @@ class SCServoArm:
     def __init__(self, config: SCServoConfig):
         self.config = config
         self.port_handler = scs.PortHandler(config.port)
-        self.packet_handler = scs.PacketHandler(PROTOCOL_VERSION)
+        if hasattr(scs, "PacketHandler"):
+            self.packet_handler = scs.PacketHandler(PROTOCOL_VERSION)
+            self._uses_protocol_packet = False
+        else:
+            # Feetech SDK variant used by vassar-feetech-servo-sdk.
+            self.packet_handler = scs.sms_sts(self.port_handler)
+            self._uses_protocol_packet = True
         self.connected = False
 
     def connect(self) -> None:
@@ -66,12 +69,19 @@ class SCServoArm:
         )
 
     def read_positions(self) -> list[int]:
-        group = scs.GroupSyncRead(
-            self.port_handler,
-            self.packet_handler,
-            ADDR_PRESENT_POSITION,
-            LEN_PRESENT_POSITION,
-        )
+        if self._uses_protocol_packet:
+            group = scs.GroupSyncRead(
+                self.packet_handler,
+                ADDR_PRESENT_POSITION,
+                LEN_PRESENT_POSITION,
+            )
+        else:
+            group = scs.GroupSyncRead(
+                self.port_handler,
+                self.packet_handler,
+                ADDR_PRESENT_POSITION,
+                LEN_PRESENT_POSITION,
+            )
 
         for motor_id in self.config.motor_ids:
             if not group.addParam(motor_id):
@@ -114,7 +124,15 @@ class SCServoArm:
     def _sync_write(
         self, addr: int, byte_len: int, payloads: dict[int, list[int]]
     ) -> None:
-        group = scs.GroupSyncWrite(self.port_handler, self.packet_handler, addr, byte_len)
+        if self._uses_protocol_packet:
+            group = scs.GroupSyncWrite(self.packet_handler, addr, byte_len)
+        else:
+            group = scs.GroupSyncWrite(
+                self.port_handler,
+                self.packet_handler,
+                addr,
+                byte_len,
+            )
 
         for motor_id, payload in payloads.items():
             if not group.addParam(motor_id, payload):
