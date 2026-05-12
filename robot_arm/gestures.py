@@ -25,7 +25,7 @@ class Gestures:
             return
 
         gesture_positions = list(base_positions)
-        gesture_positions[2] = _clamp_position(gesture_positions[2] + 80)
+        gesture_positions[2] = _clamp_position(gesture_positions[2] - 80)
 
         for pulse_index in range(3):
             self.arm.write_goal_positions(gesture_positions)
