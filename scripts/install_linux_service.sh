@@ -58,7 +58,7 @@ run_with_spinner() {
   fi
 }
 
-run_with_spinner "Creating virtual environment..." "${PYTHON_BIN}" -m venv "${VENV_DIR}"
+run_with_spinner "Creating virtual environment..." "${PYTHON_BIN}" -m venv --system-site-packages "${VENV_DIR}"
 run_with_spinner "Upgrading pip.................." "${VENV_DIR}/bin/python" -m pip install --upgrade pip
 
 if [[ "${EUID}" -eq 0 ]]; then
