@@ -29,6 +29,11 @@ if [[ ! -f "${SERVICE_TEMPLATE}" ]]; then
   exit 1
 fi
 
+if ! command -v apt-get >/dev/null 2>&1; then
+  echo "This installer currently expects apt-get (Debian/Raspberry Pi OS)."
+  exit 1
+fi
+
 # Spinner helper — runs a command in the background and shows an animated spinner
 run_with_spinner() {
   local label="$1"
@@ -55,6 +60,14 @@ run_with_spinner() {
 
 run_with_spinner "Creating virtual environment..." "${PYTHON_BIN}" -m venv "${VENV_DIR}"
 run_with_spinner "Upgrading pip.................." "${VENV_DIR}/bin/python" -m pip install --upgrade pip
+
+if [[ "${EUID}" -eq 0 ]]; then
+  run_with_spinner "Installing system GPIO backend (python3-lgpio)..." \
+    apt-get install -y python3-lgpio
+else
+  run_with_spinner "Installing system GPIO backend (python3-lgpio)..." \
+    sudo apt-get install -y python3-lgpio
+fi
 
 if [[ -s "${REPO_ROOT}/requirements.txt" ]]; then
   run_with_spinner "Installing packages (this may take several minutes on Pi Zero)..." \
