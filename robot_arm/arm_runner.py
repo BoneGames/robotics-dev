@@ -103,16 +103,15 @@ def indicate_position(positions: list[int]) -> None:
     print("Completed emphasis gesture")
 
 
-def move_to_base_position(delay_seconds: float = 0) -> None:
+def move_to_base_position() -> None:
     """Move the arm to base pose, optionally waiting before motion."""
 
     arm = _get_arm()
     if arm is None:
         print("Startup base move skipped, MOTOR_IDS is not configured")
         return
-
-    if delay_seconds > 0:
-        time.sleep(delay_seconds)
+    
+    _get_gestures(arm).snap_finger()
 
     base_positions = get_base_positions()
     arm.write_goal_positions(base_positions)

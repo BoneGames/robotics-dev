@@ -81,10 +81,13 @@ else
 fi
 
 if [[ "${EUID}" -eq 0 ]]; then
+  # Ensure network-online.target waits for WiFi before declaring online
+  systemctl enable NetworkManager-wait-online.service 2>/dev/null || true
   systemctl daemon-reload
   systemctl enable "${SERVICE_NAME}"
   systemctl restart "${SERVICE_NAME}"
 else
+  sudo systemctl enable NetworkManager-wait-online.service 2>/dev/null || true
   sudo systemctl daemon-reload
   sudo systemctl enable "${SERVICE_NAME}"
   sudo systemctl restart "${SERVICE_NAME}"

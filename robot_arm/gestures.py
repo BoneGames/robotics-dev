@@ -29,7 +29,20 @@ class Gestures:
 
         for pulse_index in range(3):
             self.arm.write_goal_positions(gesture_positions)
-            time.sleep(0.25)
+            time.sleep(0.35)
             if pulse_index < 2:
                 self.arm.write_goal_positions(base_positions)
-                time.sleep(0.25)
+                time.sleep(0.35)
+    
+    def snap_finger(self) -> None:
+
+        base_positions = self.arm.read_positions()
+        if len(base_positions) < 5:
+            return
+
+        gesture_positions = list(base_positions)
+        gesture_positions[4] = _clamp_position(gesture_positions[4] + 280)
+
+        self.arm.write_goal_positions(gesture_positions)
+        time.sleep(0.35)
+        self.arm.write_goal_positions(base_positions)
