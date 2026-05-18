@@ -34,7 +34,7 @@ def main() -> int:
             round_number = get_round()
             positions = get_positions(round_number)
             indicate_position(positions)
-            move_to_base_position(delay_seconds=1)
+            move_to_base_position()
         previous_pressed = pressed
         time.sleep(BUTTON_POLL_INTERVAL_SECONDS)
 

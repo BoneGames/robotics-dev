@@ -104,13 +104,13 @@ def indicate_position(positions: list[int]) -> None:
 
 
 def move_to_base_position() -> None:
-    """Move the arm to base pose, optionally waiting before motion."""
+    """Move the arm to base pose."""
 
     arm = _get_arm()
     if arm is None:
         print("Startup base move skipped, MOTOR_IDS is not configured")
         return
-    
+
     _get_gestures(arm).snap_finger()
 
     base_positions = get_base_positions()
